@@ -35,7 +35,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool _loggedIn = true;
+  bool _loggedIn = false;
 
   void _placeholderPrivateMethod() {
     // setState(() {
@@ -55,29 +55,74 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
+        toolbarHeight: 30.0,
         title: Text(widget.title),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'You are logged in:',
+            Container(
+              margin: EdgeInsets.symmetric(
+                horizontal: 40.0,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  decoration: InputDecoration(
+                    labelText: 'email',
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(6.0),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.teal[200]),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(6.0),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
-            Text(
-              '$_loggedIn',
-              style: Theme.of(context).textTheme.headline4,
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 40.0, vertical: 10.0),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'password',
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(6.0),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.teal[200]),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(6.0),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
             RaisedButton(
-                onPressed: _logIn,
-                child: Text(_loggedIn ? 'Log Out' : 'Log In')),
+              onPressed: _logIn,
+              child: Text('Log In'),
+            ),
+            Text(
+              'Register',
+              style: TextStyle(
+                decoration: TextDecoration.underline,
+              ),
+            ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _placeholderPrivateMethod,
-        tooltip: 'Camera',
-        child: Icon(Icons.camera_alt),
       ),
     );
   }
