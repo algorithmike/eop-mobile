@@ -21,19 +21,6 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _loggedIn = false;
 
-  void _placeholderPrivateMethod() {
-    // setState(() {
-    //
-    // });
-    print('Camera button was pressed.');
-  }
-
-  void _logIn() {
-    setState(() {
-      _loggedIn = !_loggedIn;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,12 +83,14 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             RaisedButton(
-              onPressed: _logIn,
+              onPressed: () {
+                print('Log In button pressed.');
+              },
               child: Text('Log In'),
             ),
             FlatButton(
               onPressed: () {
-                print('Register pressed.');
+                Navigator.pushNamed(context, '/register');
               },
               child: Text(
                 'Register',

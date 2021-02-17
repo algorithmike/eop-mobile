@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:eop_mobile/LoginPage.dart';
+import 'package:eop_mobile/Pages/LoginPage.dart';
+import 'package:eop_mobile/Pages/RegisterPage.dart';
 
 void main() {
   runApp(Eop());
@@ -13,7 +14,8 @@ class Eop extends StatelessWidget {
       theme: ThemeData.dark(),
       initialRoute: '/',
       routes: {
-        '/': (context) => LoginPage(title: 'Eop'),
+        '/': (context) => LoginPage(title: 'Log In'),
+        '/register': (context) => RegisterPage(title: 'Register'),
       },
     );
   }
