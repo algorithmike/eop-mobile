@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:eop_mobile/Pages/LoginPage.dart';
-import 'package:eop_mobile/Pages/RegisterPage.dart';
+import 'package:eop_mobile/pages/LoginPage.dart';
+import 'package:eop_mobile/pages/RegisterPage.dart';
 
 void main() {
   runApp(Eop());
