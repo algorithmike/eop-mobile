@@ -34,6 +34,14 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: CircleAvatar(
+                backgroundImage: AssetImage('assets/images/eop_logo.png'),
+                backgroundColor: Colors.pink,
+                radius: 40.0,
+              ),
+            ),
             CredentialsInput(label: 'email'),
             CredentialsInput(label: 'password'),
             RaisedButton(
