@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 import 'package:eop_mobile/components/CredentialsInput.dart';
+import 'package:eop_mobile/components/GQLClient.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key, this.title}) : super(key: key);
@@ -16,39 +17,19 @@ class _LoginPageState extends State<LoginPage> {
   Color primaryThemeColor = Color(0xFFFF1155);
 
   @override
-  void initState() {
-    super.initState();
-
-    print('Init state!');
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final HttpLink httpLink = HttpLink(
-      'https://eop-backend-evtm3.ondigitalocean.app/backend/',
-    );
-
     String login = """
-            mutation {
+            mutation LogIn(\$email: String!, \$password: String!){
                 login (
-                    email: "user.test.two2@email.com",
-                    password: "testPassword123"
+                    email: \$email,
+                    password: \$password
                 ){
                     token
                 }
             }
     """;
 
-    ValueNotifier<GraphQLClient> client = ValueNotifier(
-      GraphQLClient(
-        link: httpLink,
-        // The default store is the InMemoryStore, which does NOT persist to disk
-        cache: GraphQLCache(),
-      ),
-    );
-
-    return GraphQLProvider(
-      client: client,
+    return GQLClient(
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -69,12 +50,32 @@ class _LoginPageState extends State<LoginPage> {
               ),
               CredentialsInput(label: 'email'),
               CredentialsInput(label: 'password'),
-              RaisedButton(
-                color: primaryThemeColor,
-                onPressed: () {
-                  print('Log In button pressed.');
+              Mutation(
+                options: MutationOptions(
+                  document: gql(login),
+                  update: (GraphQLDataProxy cache, QueryResult result) {
+                    print(result.data['login']['token'].toString());
+                    return cache;
+                  },
+                  onCompleted: (dynamic resultData) {
+                    // print(resultData);
+                    print('Completed');
+                  },
+                ),
+                builder: (RunMutation runMutation, QueryResult result) {
+                  return RaisedButton(
+                    color: primaryThemeColor,
+                    onPressed: () {
+                      print('Log In button pressed.');
+
+                      return runMutation({
+                        'email': "user.test.two2@email.com",
+                        'password': "testPassword123"
+                      });
+                    },
+                    child: Text('Log In'),
+                  );
                 },
-                child: Text('Log In'),
               ),
               FlatButton(
                 onPressed: () {
@@ -86,25 +87,6 @@ class _LoginPageState extends State<LoginPage> {
                     decoration: TextDecoration.underline,
                   ),
                 ),
-              ),
-              Query(
-                options: QueryOptions(
-                  document: gql(login),
-                ),
-                builder: (QueryResult result,
-                    {VoidCallback refetch, FetchMore fetchMore}) {
-                  if (result.hasException) {
-                    return Text(result.exception.toString());
-                  }
-
-                  if (result.isLoading) {
-                    return Text('...loading');
-                  }
-
-                  return Text(
-                    result.data['login']['token'].toString(),
-                  );
-                },
               ),
             ],
           ),
