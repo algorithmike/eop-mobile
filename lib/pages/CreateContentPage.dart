@@ -5,9 +5,11 @@ import 'package:eop_mobile/utils/secureStorage.dart';
 import 'package:eop_mobile/components/CredentialsInput.dart';
 
 class CreateContentPage extends StatefulWidget {
-  CreateContentPage({Key key, this.title}) : super(key: key);
+  CreateContentPage({Key key, this.title, @required this.token})
+      : super(key: key);
 
   final String title;
+  final String token;
 
   @override
   _CreateContentPageState createState() => _CreateContentPageState();
