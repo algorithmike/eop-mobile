@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 import 'package:eop_mobile/components/CredentialsInput.dart';
+import 'package:eop_mobile/utils/popupAlert.dart';
 
 class RegisterPage extends StatefulWidget {
   RegisterPage({Key key, this.title}) : super(key: key);
@@ -42,6 +43,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final PopupAlert popupAlert = PopupAlert(context: context);
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -70,7 +73,9 @@ class _RegisterPageState extends State<RegisterPage> {
                     print('Register successful');
                     Navigator.pop(context, token);
                   } else {
-                    print('Unable to register.');
+                    popupAlert.showOkayPrompt(
+                      message: result.exception.graphqlErrors[0].message,
+                    );
                   }
                 },
               ),
@@ -86,9 +91,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         'password': passwordController.text, // testPassword123
                         'username': userNameController.text
                       });
+                    } else {
+                      popupAlert.showOkayPrompt(
+                        message: 'Password fields do not match.',
+                      );
                     }
-
-                    print('Passwords don\'t match');
                   },
                   child: Text('Register'),
                 );

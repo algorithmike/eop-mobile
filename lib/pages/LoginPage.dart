@@ -1,10 +1,11 @@
-import 'package:eop_mobile/pages/CreateContentPage.dart';
-import 'package:eop_mobile/pages/RegisterPage.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-import 'package:eop_mobile/components/CredentialsInput.dart';
 import 'package:eop_mobile/utils/secureStorage.dart';
+import 'package:eop_mobile/utils/popupAlert.dart';
+import 'package:eop_mobile/components/CredentialsInput.dart';
+import 'package:eop_mobile/pages/CreateContentPage.dart';
+import 'package:eop_mobile/pages/RegisterPage.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key, this.title}) : super(key: key);
@@ -39,6 +40,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final PopupAlert popupAlert = PopupAlert(context: context);
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -83,8 +86,9 @@ class _LoginPageState extends State<LoginPage> {
                       }),
                     );
                   } else {
-                    print('Unable to log in.');
-                    //TODO: Implement notification of failed login.
+                    popupAlert.showOkayPrompt(
+                      message: result.exception.graphqlErrors[0].message,
+                    );
                   }
                 },
               ),
