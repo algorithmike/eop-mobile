@@ -3,15 +3,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class SecureStorage {
   final _storage = FlutterSecureStorage();
 
-  Future setAuthToken(String token) async {
+  Future<void> setAuthToken(String token) async {
     return await _storage.write(key: 'EOP_JWT_TOKEN', value: token);
   }
 
-  Future getAuthToken() async {
+  Future<String> getAuthToken() async {
     return await _storage.read(key: 'EOP_JWT_TOKEN');
   }
 
-  Future deleteAuthToken() async {
+  Future<void> deleteAuthToken() async {
     return await _storage.delete(key: 'EOP_JWT_TOKEN');
   }
 }

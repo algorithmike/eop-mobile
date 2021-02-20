@@ -14,6 +14,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   final secureStorage = SecureStorage();
   Color primaryThemeColor = Color(0xFFFF1155);
   String eopToken;
@@ -49,8 +51,15 @@ class _LoginPageState extends State<LoginPage> {
                 radius: 40.0,
               ),
             ),
-            CredentialsInput(label: 'email'),
-            CredentialsInput(label: 'password'),
+            CredentialsInput(
+              label: 'email',
+              controller: emailController,
+            ),
+            CredentialsInput(
+              label: 'password',
+              controller: passwordController,
+              obscureText: true,
+            ),
             Mutation(
               options: MutationOptions(
                 document: gql(login),
@@ -59,11 +68,17 @@ class _LoginPageState extends State<LoginPage> {
 
                   print(token);
                   await secureStorage.setAuthToken(token);
+
                   return cache;
                 },
                 onCompleted: (dynamic resultData) {
                   // print(resultData);
                   print('Completed');
+                },
+                onError: (dynamic errorData) {
+                  // print(resultData);
+                  print('Error');
+                  print(errorData);
                 },
               ),
               builder: (RunMutation runMutation, QueryResult result) {
@@ -73,8 +88,8 @@ class _LoginPageState extends State<LoginPage> {
                     print('Log In button pressed.');
 
                     return runMutation({
-                      'email': "user.test.two2@email.com",
-                      'password': "testPassword123"
+                      'email': emailController.text, // user.test.two2@email.com
+                      'password': passwordController.text // testPassword123
                     });
                   },
                   child: Text('Log In'),

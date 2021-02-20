@@ -25,7 +25,7 @@ class GPSLocation {
       }
     }
 
-    return await Geolocator.getCurrentPosition(
+    return Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.low,
     );
   }
