@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:eop_mobile/components/GQLClient.dart';
+import 'package:eop_mobile/pages/CreateContentPage.dart';
 import 'package:eop_mobile/pages/LoginPage.dart';
 import 'package:eop_mobile/pages/RegisterPage.dart';
 
@@ -8,16 +10,19 @@ void main() {
 }
 
 class Eop extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData.dark(),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => LoginPage(title: 'Log In'),
-        '/register': (context) => RegisterPage(title: 'Register'),
-      },
+    return GQLClient(
+      child: MaterialApp(
+        theme: ThemeData.dark(),
+        initialRoute: '/createContent',
+        routes: {
+          '/': (context) => LoginPage(title: 'Log In'),
+          '/createContent': (context) =>
+              CreateContentPage(title: 'Create Content'),
+          '/register': (context) => RegisterPage(title: 'Register'),
+        },
+      ),
     );
   }
 }
