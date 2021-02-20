@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 import 'package:eop_mobile/components/CredentialsInput.dart';
+import 'package:eop_mobile/utils/secureStorage.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key, this.title}) : super(key: key);
@@ -13,7 +14,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final secureStorage = SecureStorage();
   Color primaryThemeColor = Color(0xFFFF1155);
+  String eopToken;
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +54,11 @@ class _LoginPageState extends State<LoginPage> {
             Mutation(
               options: MutationOptions(
                 document: gql(login),
-                update: (GraphQLDataProxy cache, QueryResult result) {
-                  print(result.data['login']['token'].toString());
+                update: (GraphQLDataProxy cache, QueryResult result) async {
+                  String token = result.data['login']['token'].toString();
+
+                  print(token);
+                  await secureStorage.setAuthToken(token);
                   return cache;
                 },
                 onCompleted: (dynamic resultData) {

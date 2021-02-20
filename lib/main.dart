@@ -9,7 +9,12 @@ void main() {
   runApp(Eop());
 }
 
-class Eop extends StatelessWidget {
+class Eop extends StatefulWidget {
+  @override
+  _EopState createState() => _EopState();
+}
+
+class _EopState extends State<Eop> {
   @override
   Widget build(BuildContext context) {
     return GQLClient(
