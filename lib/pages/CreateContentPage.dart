@@ -1,7 +1,11 @@
 import 'package:eop_mobile/utils/gpsLocation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 
 import 'package:eop_mobile/utils/secureStorage.dart';
+import 'package:eop_mobile/utils/constants.dart';
+import 'package:eop_mobile/utils/popupAlert.dart';
 import 'package:eop_mobile/components/CredentialsInput.dart';
 
 class CreateContentPage extends StatefulWidget {
@@ -18,18 +22,24 @@ class CreateContentPage extends StatefulWidget {
 class _CreateContentPageState extends State<CreateContentPage> {
   final secureStorage = SecureStorage();
   final locator = GPSLocation();
-  final TextEditingController controller = TextEditingController();
-  final String register = """
+  final TextEditingController contentTitleController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+  //TODO: Add existing event identifier to query.
+  //TODO: Add customDate to query.
+  final String createContent = """
             mutation CreateContent(
-              \$email: String!,
-              \$password: String!,
-              \$username: String!
+              \$file: Upload!,
+              \$coordinates: String!,
+              \$title: String!
+              \$description: String
             ){
                 createContent(
                     data: {
-                      email: \$email,
-                      password: \$password,
-                      username: \$username
+                      file: \$file,
+                      coordinates: \$coordinates,
+                      title: \$title,
+                      description: \$description,
+                      postedFromEop: true                 
                     }
                 ){
                     token
@@ -39,6 +49,8 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
   @override
   Widget build(BuildContext context) {
+    final PopupAlert popupAlert = PopupAlert(context: context);
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -50,21 +62,53 @@ class _CreateContentPageState extends State<CreateContentPage> {
           child: Column(
             children: [
               CredentialsInput(
-                label: 'Test Text',
-                controller: controller,
+                label: 'title',
+                controller: contentTitleController,
               ),
-              RaisedButton(
-                child: Text('Test Text Input'),
-                onPressed: () async {
-                  print('Test Text Input Pressed');
-                  print(controller.text);
-                },
+              CredentialsInput(
+                label: 'description',
+                controller: descriptionController,
+                longText: true,
               ),
-              RaisedButton(
-                child: Text('Get Location'),
-                onPressed: () async {
-                  print('Location Button Pressed');
-                  print(await locator.getCurrentLocation());
+              Mutation(
+                options: MutationOptions(
+                  document: gql(createContent),
+                  update: (GraphQLDataProxy cache, QueryResult result) async {
+                    if (result.data != null) {
+                      print(result.data);
+                    } else {
+                      popupAlert.showOkayPrompt(
+                        message: result.exception.graphqlErrors[0].message,
+                      );
+                    }
+                  },
+                ),
+                builder: (RunMutation runMutation, QueryResult result) {
+                  return RaisedButton(
+                    color: kPrimaryThemeColor,
+                    onPressed: () async {
+                      try {
+                        Position location = await locator.getCurrentLocation();
+
+                        popupAlert.showOkayPrompt(
+                          message: location.toString(),
+                        );
+                        //TODO: Finish implementing file upload as commented out below.
+                        // return runMutation({
+                        //   'title': contentTitleController.text,
+                        //   'description': descriptionController.text,
+                        //   'location': location.toString()
+                        // });
+                      } catch (error) {
+                        print('Catch block!!!');
+                        print(error);
+                        // popupAlert.showOkayPrompt(
+                        //   message: 'Unsuccessful post.',
+                        // );
+                      }
+                    },
+                    child: Text('Publish'),
+                  );
                 },
               ),
               FlatButton(

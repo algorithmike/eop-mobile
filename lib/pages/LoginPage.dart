@@ -3,6 +3,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 import 'package:eop_mobile/utils/secureStorage.dart';
 import 'package:eop_mobile/utils/popupAlert.dart';
+import 'package:eop_mobile/utils/constants.dart';
 import 'package:eop_mobile/components/CredentialsInput.dart';
 import 'package:eop_mobile/pages/CreateContentPage.dart';
 import 'package:eop_mobile/pages/RegisterPage.dart';
@@ -20,7 +21,6 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final secureStorage = SecureStorage();
-  final Color primaryThemeColor = Color(0xFFFF1155);
   final String login = """
             mutation LogIn(\$email: String!, \$password: String!){
                 login (
@@ -65,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
               padding: const EdgeInsets.all(12.0),
               child: CircleAvatar(
                 backgroundImage: AssetImage('assets/images/eop_logo.png'),
-                backgroundColor: primaryThemeColor,
+                backgroundColor: kPrimaryThemeColor,
                 radius: 40.0,
               ),
             ),
@@ -103,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               builder: (RunMutation runMutation, QueryResult result) {
                 return RaisedButton(
-                  color: primaryThemeColor,
+                  color: kPrimaryThemeColor,
                   onPressed: () {
                     return runMutation({
                       'email': emailController.text, // user.test.two2@email.com
