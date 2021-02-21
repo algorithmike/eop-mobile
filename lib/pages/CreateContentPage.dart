@@ -61,6 +61,29 @@ class _CreateContentPageState extends State<CreateContentPage> {
         child: Center(
           child: Column(
             children: [
+              DropdownButton<String>(
+                value: 'New Event',
+                icon: Icon(Icons.arrow_downward),
+                iconSize: 24,
+                elevation: 16,
+                underline: Container(
+                  height: 1,
+                  color: kPrimaryThemeColor,
+                ),
+                onChanged: (String selectedValue) {
+                  setState(() {
+                    print(selectedValue);
+                  });
+                },
+                //TODO: Wire up query to get list of existing events.
+                items: <String>['New Event']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
               CredentialsInput(
                 label: 'title',
                 controller: contentTitleController,
