@@ -34,7 +34,16 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
+    secureStorage.getAuthToken().then((token) {
+      if (token != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) {
+            return CreateContentPage(title: 'Create Content', token: token);
+          }),
+        );
+      }
+    });
     super.initState();
   }
 
@@ -124,8 +133,6 @@ class _LoginPageState extends State<LoginPage> {
                           title: 'Create Content', token: token);
                     }),
                   );
-                } else {
-                  print('no token!');
                 }
               },
               child: Text(
