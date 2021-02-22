@@ -1,12 +1,17 @@
+import 'dart:io';
+
 import 'package:eop_mobile/utils/gpsLocation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 
+import 'package:eop_mobile/components/CredentialsInput.dart';
+import 'package:eop_mobile/pages/CameraPage.dart';
+import 'package:eop_mobile/utils/enums.dart';
 import 'package:eop_mobile/utils/secureStorage.dart';
 import 'package:eop_mobile/utils/constants.dart';
 import 'package:eop_mobile/utils/popupAlert.dart';
-import 'package:eop_mobile/components/CredentialsInput.dart';
 
 class CreateContentPage extends StatefulWidget {
   CreateContentPage({Key key, this.title, @required this.token})
@@ -20,6 +25,7 @@ class CreateContentPage extends StatefulWidget {
 }
 
 class _CreateContentPageState extends State<CreateContentPage> {
+  File contentFile = null;
   final secureStorage = SecureStorage();
   final locator = GPSLocation();
   final TextEditingController contentTitleController = TextEditingController();
@@ -47,6 +53,34 @@ class _CreateContentPageState extends State<CreateContentPage> {
             }
     """;
 
+  Future capture(MediaType mediaType) async {
+    print(mediaType);
+
+    final media = (mediaType == MediaType.IMAGE)
+        ? await ImagePicker().getImage(source: ImageSource.camera)
+        : await ImagePicker().getVideo(source: ImageSource.camera);
+    final file = File(media.path);
+
+    if (file == null) {
+      return;
+    } else {
+      setState(() {
+        contentFile = file;
+      });
+    }
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (context) {
+    //       return CameraPage();
+    //     },
+    //     settings: RouteSettings(
+    //       arguments: mediaType,
+    //     ),
+    //   ),
+    // );
+  }
+
   @override
   Widget build(BuildContext context) {
     final PopupAlert popupAlert = PopupAlert(context: context);
@@ -61,28 +95,66 @@ class _CreateContentPageState extends State<CreateContentPage> {
         child: Center(
           child: Column(
             children: [
-              DropdownButton<String>(
-                value: 'New Event',
-                icon: Icon(Icons.arrow_downward),
-                iconSize: 24,
-                elevation: 16,
-                underline: Container(
-                  height: 1,
-                  color: kPrimaryThemeColor,
+              Container(
+                margin: EdgeInsets.only(top: 20.0),
+                child: DropdownButton<String>(
+                  iconEnabledColor: kPrimaryThemeColor,
+                  value: 'New Event',
+                  icon: Icon(Icons.arrow_downward),
+                  iconSize: 24,
+                  elevation: 16,
+                  underline: Container(
+                    height: 1,
+                    color: kPrimaryThemeColor,
+                  ),
+                  onChanged: (String selectedValue) {
+                    setState(() {
+                      print(selectedValue);
+                    });
+                  },
+                  //TODO: Wire up query to get list of existing events.
+                  items: <String>['New Event']
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
                 ),
-                onChanged: (String selectedValue) {
-                  setState(() {
-                    print(selectedValue);
-                  });
-                },
-                //TODO: Wire up query to get list of existing events.
-                items: <String>['New Event']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
+              ),
+              Container(
+                child: (contentFile == null)
+                    ? Icon(Icons.photo, size: 100.0)
+                    : Image.file(contentFile),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.all(20.0),
+                    child: CircleAvatar(
+                      radius: 30.0,
+                      child: IconButton(
+                        iconSize: 40.0,
+                        color: kPrimaryThemeColor,
+                        icon: Icon(Icons.camera_alt),
+                        onPressed: () => capture(MediaType.IMAGE),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.all(20.0),
+                    child: CircleAvatar(
+                      radius: 30.0,
+                      child: IconButton(
+                        iconSize: 40.0,
+                        color: kPrimaryThemeColor,
+                        icon: Icon(Icons.videocam),
+                        onPressed: () => capture(MediaType.VIDEO),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               CredentialsInput(
                 label: 'title',
