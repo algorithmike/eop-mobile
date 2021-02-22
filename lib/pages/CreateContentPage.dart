@@ -7,7 +7,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:eop_mobile/components/CredentialsInput.dart';
-import 'package:eop_mobile/pages/CameraPage.dart';
 import 'package:eop_mobile/utils/enums.dart';
 import 'package:eop_mobile/utils/secureStorage.dart';
 import 'package:eop_mobile/utils/constants.dart';
@@ -54,8 +53,6 @@ class _CreateContentPageState extends State<CreateContentPage> {
     """;
 
   Future capture(MediaType mediaType) async {
-    print(mediaType);
-
     final media = (mediaType == MediaType.IMAGE)
         ? await ImagePicker().getImage(source: ImageSource.camera)
         : await ImagePicker().getVideo(source: ImageSource.camera);
@@ -68,17 +65,6 @@ class _CreateContentPageState extends State<CreateContentPage> {
         contentFile = file;
       });
     }
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) {
-    //       return CameraPage();
-    //     },
-    //     settings: RouteSettings(
-    //       arguments: mediaType,
-    //     ),
-    //   ),
-    // );
   }
 
   @override
@@ -122,40 +108,49 @@ class _CreateContentPageState extends State<CreateContentPage> {
                   }).toList(),
                 ),
               ),
-              Container(
-                child: (contentFile == null)
-                    ? Icon(Icons.photo, size: 100.0)
-                    : Image.file(contentFile),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Container(
-                    margin: EdgeInsets.all(20.0),
-                    child: CircleAvatar(
-                      radius: 30.0,
-                      child: IconButton(
-                        iconSize: 40.0,
-                        color: kPrimaryThemeColor,
-                        icon: Icon(Icons.camera_alt),
-                        onPressed: () => capture(MediaType.IMAGE),
+              (contentFile != null)
+                  ? SizedBox(
+                      height: 300.0,
+                      child: Container(
+                        child: (contentFile == null)
+                            ? Icon(Icons.photo, size: 100.0)
+                            : Image.file(contentFile),
+                        margin: EdgeInsets.all(15.0),
+                        decoration: BoxDecoration(
+                          color: kPrimaryThemeColor,
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
                       ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Container(
+                          margin: EdgeInsets.all(20.0),
+                          child: CircleAvatar(
+                            radius: 30.0,
+                            child: IconButton(
+                              iconSize: 40.0,
+                              color: kPrimaryThemeColor,
+                              icon: Icon(Icons.camera_alt),
+                              onPressed: () => capture(MediaType.IMAGE),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.all(20.0),
+                          child: CircleAvatar(
+                            radius: 30.0,
+                            child: IconButton(
+                              iconSize: 40.0,
+                              color: kPrimaryThemeColor,
+                              icon: Icon(Icons.videocam),
+                              onPressed: () => capture(MediaType.VIDEO),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.all(20.0),
-                    child: CircleAvatar(
-                      radius: 30.0,
-                      child: IconButton(
-                        iconSize: 40.0,
-                        color: kPrimaryThemeColor,
-                        icon: Icon(Icons.videocam),
-                        onPressed: () => capture(MediaType.VIDEO),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               CredentialsInput(
                 label: 'title',
                 controller: contentTitleController,
@@ -165,60 +160,77 @@ class _CreateContentPageState extends State<CreateContentPage> {
                 controller: descriptionController,
                 longText: true,
               ),
-              Mutation(
-                options: MutationOptions(
-                  document: gql(createContent),
-                  update: (GraphQLDataProxy cache, QueryResult result) async {
-                    if (result.data != null) {
-                      print(result.data);
-                    } else {
-                      popupAlert.showOkayPrompt(
-                        message: result.exception.graphqlErrors[0].message,
-                      );
-                    }
-                  },
-                ),
-                builder: (RunMutation runMutation, QueryResult result) {
-                  return RaisedButton(
-                    color: kPrimaryThemeColor,
-                    onPressed: () async {
-                      try {
-                        Position location = await locator.getCurrentLocation();
-
+              if (contentFile != null)
+                Mutation(
+                  options: MutationOptions(
+                    document: gql(createContent),
+                    update: (GraphQLDataProxy cache, QueryResult result) async {
+                      if (result.data != null) {
+                        print(result.data);
+                      } else {
                         popupAlert.showOkayPrompt(
-                          message: location.toString(),
+                          message: result.exception.graphqlErrors[0].message,
                         );
-                        //TODO: Finish implementing file upload as commented out below.
-                        // return runMutation({
-                        //   'title': contentTitleController.text,
-                        //   'description': descriptionController.text,
-                        //   'location': location.toString()
-                        // });
-                      } catch (error) {
-                        print('Catch block!!!');
-                        print(error);
-                        // popupAlert.showOkayPrompt(
-                        //   message: 'Unsuccessful post.',
-                        // );
                       }
                     },
-                    child: Text('Publish'),
-                  );
-                },
-              ),
-              FlatButton(
-                onPressed: () {
-                  secureStorage.deleteAuthToken().then((result) {
-                    Navigator.pop(context);
-                  });
-                },
-                child: Text(
-                  'Log out',
-                  style: TextStyle(
-                    decoration: TextDecoration.underline,
+                  ),
+                  builder: (RunMutation runMutation, QueryResult result) {
+                    return RaisedButton(
+                      color: kPrimaryThemeColor,
+                      onPressed: () async {
+                        try {
+                          Position location =
+                              await locator.getCurrentLocation();
+
+                          popupAlert.showOkayPrompt(
+                            message: location.toString(),
+                          );
+                          //TODO: Finish implementing file upload as commented out below.
+                          // return runMutation({
+                          //   'title': contentTitleController.text,
+                          //   'description': descriptionController.text,
+                          //   'location': location.toString()
+                          // });
+                        } catch (error) {
+                          print('Catch block!!!');
+                          print(error);
+                          // popupAlert.showOkayPrompt(
+                          //   message: 'Unsuccessful post.',
+                          // );
+                        }
+                      },
+                      child: Text('Publish'),
+                    );
+                  },
+                ),
+              if (contentFile == null)
+                FlatButton(
+                  onPressed: () {
+                    secureStorage.deleteAuthToken().then((result) {
+                      Navigator.pop(context);
+                    });
+                  },
+                  child: Text(
+                    'Log out',
+                    style: TextStyle(
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                )
+              else
+                FlatButton(
+                  onPressed: () {
+                    setState(() {
+                      contentFile = null;
+                    });
+                  },
+                  child: Text(
+                    'reset',
+                    style: TextStyle(
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
