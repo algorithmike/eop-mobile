@@ -1,4 +1,4 @@
-enum MediaType {
+enum EopMediaType {
   VIDEO,
   IMAGE,
 }

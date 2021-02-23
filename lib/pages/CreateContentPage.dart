@@ -1,12 +1,17 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:eop_mobile/utils/gpsLocation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import "package:http/http.dart";
+import 'package:http_parser/http_parser.dart';
+import 'package:path/path.dart';
 
 import 'package:eop_mobile/components/CredentialsInput.dart';
+import 'package:eop_mobile/components/VideoPlayerWidget.dart';
 import 'package:eop_mobile/utils/enums.dart';
 import 'package:eop_mobile/utils/secureStorage.dart';
 import 'package:eop_mobile/utils/constants.dart';
@@ -24,13 +29,15 @@ class CreateContentPage extends StatefulWidget {
 }
 
 class _CreateContentPageState extends State<CreateContentPage> {
-  File contentFile = null;
+  File contentFile;
+  EopMediaType contentFileMediaType;
+
   final secureStorage = SecureStorage();
   final locator = GPSLocation();
   final TextEditingController contentTitleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
-  //TODO: Add existing event identifier to query.
-  //TODO: Add customDate to query.
+  //TODO: (MEDIUM) Add existing event identifier to query.
+  //TODO: (LOW) Add customDate to query.
   final String createContent = """
             mutation CreateContent(
               \$file: Upload!,
@@ -47,13 +54,14 @@ class _CreateContentPageState extends State<CreateContentPage> {
                       postedFromEop: true                 
                     }
                 ){
-                    token
+                    title
+                    mediaUrl
                 }
             }
     """;
 
-  Future capture(MediaType mediaType) async {
-    final media = (mediaType == MediaType.IMAGE)
+  Future capture(EopMediaType currentMediaType) async {
+    final media = (currentMediaType == EopMediaType.IMAGE)
         ? await ImagePicker().getImage(source: ImageSource.camera)
         : await ImagePicker().getVideo(source: ImageSource.camera);
     final file = File(media.path);
@@ -63,6 +71,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
     } else {
       setState(() {
         contentFile = file;
+        contentFileMediaType = currentMediaType;
       });
     }
   }
@@ -108,49 +117,52 @@ class _CreateContentPageState extends State<CreateContentPage> {
                   }).toList(),
                 ),
               ),
-              (contentFile != null)
-                  ? SizedBox(
-                      height: 300.0,
-                      child: Container(
-                        child: (contentFile == null)
-                            ? Icon(Icons.photo, size: 100.0)
-                            : Image.file(contentFile),
-                        margin: EdgeInsets.all(15.0),
-                        decoration: BoxDecoration(
+              if (contentFile != null)
+                (contentFileMediaType == EopMediaType.IMAGE)
+                    ? SizedBox(
+                        height: 300.0,
+                        child: Container(
+                          child: (contentFile == null)
+                              ? Icon(Icons.photo, size: 100.0)
+                              : Image.file(contentFile),
+                          margin: EdgeInsets.all(15.0),
+                          decoration: BoxDecoration(
+                            color: kPrimaryThemeColor,
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
+                      )
+                    : VideoPlayerWidget(file: contentFile)
+              else
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      margin: EdgeInsets.all(20.0),
+                      child: CircleAvatar(
+                        radius: 30.0,
+                        child: IconButton(
+                          iconSize: 40.0,
                           color: kPrimaryThemeColor,
-                          borderRadius: BorderRadius.circular(10.0),
+                          icon: Icon(Icons.camera_alt),
+                          onPressed: () => capture(EopMediaType.IMAGE),
                         ),
                       ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Container(
-                          margin: EdgeInsets.all(20.0),
-                          child: CircleAvatar(
-                            radius: 30.0,
-                            child: IconButton(
-                              iconSize: 40.0,
-                              color: kPrimaryThemeColor,
-                              icon: Icon(Icons.camera_alt),
-                              onPressed: () => capture(MediaType.IMAGE),
-                            ),
-                          ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.all(20.0),
-                          child: CircleAvatar(
-                            radius: 30.0,
-                            child: IconButton(
-                              iconSize: 40.0,
-                              color: kPrimaryThemeColor,
-                              icon: Icon(Icons.videocam),
-                              onPressed: () => capture(MediaType.VIDEO),
-                            ),
-                          ),
-                        ),
-                      ],
                     ),
+                    Container(
+                      margin: EdgeInsets.all(20.0),
+                      child: CircleAvatar(
+                        radius: 30.0,
+                        child: IconButton(
+                          iconSize: 40.0,
+                          color: kPrimaryThemeColor,
+                          icon: Icon(Icons.videocam),
+                          onPressed: () => capture(EopMediaType.VIDEO),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               CredentialsInput(
                 label: 'title',
                 controller: contentTitleController,
@@ -166,11 +178,15 @@ class _CreateContentPageState extends State<CreateContentPage> {
                     document: gql(createContent),
                     update: (GraphQLDataProxy cache, QueryResult result) async {
                       if (result.data != null) {
+                        print('Successful Upload!');
                         print(result.data);
+                        //TODO: Add post-upload navigation or actions.
                       } else {
-                        popupAlert.showOkayPrompt(
-                          message: result.exception.graphqlErrors[0].message,
-                        );
+                        print('ERROR: ');
+                        print(result);
+                        // popupAlert.showOkayPrompt(
+                        //   message: result.exception.graphqlErrors[0].message,
+                        // );
                       }
                     },
                   ),
@@ -182,15 +198,24 @@ class _CreateContentPageState extends State<CreateContentPage> {
                           Position location =
                               await locator.getCurrentLocation();
 
-                          popupAlert.showOkayPrompt(
-                            message: location.toString(),
-                          );
-                          //TODO: Finish implementing file upload as commented out below.
-                          // return runMutation({
-                          //   'title': contentTitleController.text,
-                          //   'description': descriptionController.text,
-                          //   'location': location.toString()
-                          // });
+                          Uint8List byteData = contentFile.readAsBytesSync();
+                          String filename = basename(contentFile.path);
+                          String fileExt = filename.split('.').last;
+                          String mediaType =
+                              contentFileMediaType.toString().split('.').last;
+
+                          final uploadableFile = MultipartFile.fromBytes(
+                              fileExt, byteData,
+                              filename: contentFile.path,
+                              contentType: MediaType(mediaType, fileExt));
+
+                          //TODO: Add Loading screen or something for this.
+                          return runMutation({
+                            'title': contentTitleController.text,
+                            'description': descriptionController.text,
+                            'coordinates': location.toString(),
+                            'file': uploadableFile
+                          });
                         } catch (error) {
                           print('Catch block!!!');
                           print(error);

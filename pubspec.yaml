@@ -28,6 +28,7 @@ dependencies:
   cupertino_icons: ^1.0.0
   flutter_secure_storage: ^3.3.5
   geolocator: ^6.2.0
+  http_parser: ^3.1.4
   graphql_flutter: ^4.0.1
   image_picker: ^0.6.7+22
   video_player: ^1.0.1
