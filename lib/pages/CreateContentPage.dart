@@ -12,7 +12,8 @@ import 'package:path/path.dart';
 
 import 'package:eop_mobile/components/CredentialsInput.dart';
 import 'package:eop_mobile/components/VideoPlayerWidget.dart';
-import 'package:eop_mobile/utils/enums.dart';
+import 'package:eop_mobile/models/enums.dart';
+import 'package:eop_mobile/models/OrganizedEvent.dart';
 import 'package:eop_mobile/utils/secureStorage.dart';
 import 'package:eop_mobile/utils/constants.dart';
 import 'package:eop_mobile/utils/popupAlert.dart';
@@ -36,29 +37,40 @@ class _CreateContentPageState extends State<CreateContentPage> {
   final locator = GPSLocation();
   final TextEditingController contentTitleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
-  //TODO: (MEDIUM) Add existing event identifier to query.
-  //TODO: (LOW) Add customDate to query.
-  final String createContent = """
-            mutation CreateContent(
-              \$file: Upload!,
-              \$coordinates: String!,
-              \$title: String!
-              \$description: String
-            ){
-                createContent(
-                    data: {
-                      file: \$file,
-                      coordinates: \$coordinates,
-                      title: \$title,
-                      description: \$description,
-                      postedFromEop: true                 
-                    }
-                ){
-                    title
-                    mediaUrl
-                }
-            }
+
+  final String myEvents = """
+      query {
+        me {
+          eventsOrganized {
+            id
+            title
+            description
+          }
+        }
+      }
     """;
+
+  final String createContent = """
+    mutation CreateContent(
+      \$file: Upload!,
+      \$coordinates: String!,
+      \$title: String!
+      \$description: String
+    ){
+      createContent(
+        data: {
+          file: \$file,
+          coordinates: \$coordinates,
+          title: \$title,
+          description: \$description,
+          postedFromEop: true                 
+        }
+      ){
+        title
+        mediaUrl
+      }
+    }
+  """;
 
   Future capture(EopMediaType currentMediaType) async {
     final media = (currentMediaType == EopMediaType.IMAGE)
@@ -90,32 +102,67 @@ class _CreateContentPageState extends State<CreateContentPage> {
         child: Center(
           child: Column(
             children: [
-              Container(
-                margin: EdgeInsets.only(top: 20.0),
-                child: DropdownButton<String>(
-                  iconEnabledColor: kPrimaryThemeColor,
-                  value: 'New Event',
-                  icon: Icon(Icons.arrow_downward),
-                  iconSize: 24,
-                  elevation: 16,
-                  underline: Container(
-                    height: 1,
-                    color: kPrimaryThemeColor,
-                  ),
-                  onChanged: (String selectedValue) {
-                    setState(() {
-                      print(selectedValue);
-                    });
-                  },
-                  //TODO: Wire up query to get list of existing events.
-                  items: <String>['New Event']
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
+              Query(
+                options: QueryOptions(
+                  document: gql(myEvents),
                 ),
+                builder: (QueryResult result,
+                    {VoidCallback refetch, FetchMore fetchMore}) {
+                  if (result.hasException) {
+                    // return Text(result.exception.toString());
+                    print(result.exception);
+                  }
+
+                  if (result.isLoading) {
+                    return Text('...loading');
+                  }
+
+                  var listOfEvents = <OrganizedEvent>[
+                    OrganizedEvent(id: 'new', title: 'New Event')
+                  ];
+
+                  if (result.data != null) {
+                    result.data['me']['eventsOrganized'].forEach((element) {
+                      print(element);
+                      listOfEvents.add(
+                        OrganizedEvent(
+                          title: element['title'],
+                          id: element['id'],
+                        ),
+                      );
+                    });
+                  }
+                  var menuItems = listOfEvents.map((event) => DropdownMenuItem(
+                      value: event.id, child: Text(event.title)));
+
+                  return Container(
+                    margin: EdgeInsets.only(
+                      top: 20.0,
+                      left: 40.0,
+                      right: 40.0,
+                    ),
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      iconEnabledColor: kPrimaryThemeColor,
+                      //TODO: Setup value for query
+                      value: 'new',
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 24,
+                      elevation: 16,
+                      underline: Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(color: kPrimaryThemeColor)),
+                        height: 1,
+                      ),
+                      onChanged: (String selectedValue) {
+                        setState(() {
+                          print(selectedValue);
+                        });
+                      },
+                      items: menuItems.toList(),
+                    ),
+                  );
+                },
               ),
               if (contentFile != null)
                 (contentFileMediaType == EopMediaType.IMAGE)
