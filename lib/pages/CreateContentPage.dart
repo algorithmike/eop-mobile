@@ -195,7 +195,9 @@ class _CreateContentPageState extends State<CreateContentPage> {
                   }
 
                   if (result.isLoading) {
-                    return Text('...loading');
+                    return LinearProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation(kPrimaryThemeColor),
+                    );
                   }
 
                   var listOfEvents = <OrganizedEvent>[
@@ -275,7 +277,9 @@ class _CreateContentPageState extends State<CreateContentPage> {
                   ),
                   builder: (RunMutation runMutation, QueryResult result) {
                     if (result.isLoading) {
-                      return Text('...loading');
+                      return CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(kPrimaryThemeColor),
+                      );
                     }
 
                     return RaisedButton(
