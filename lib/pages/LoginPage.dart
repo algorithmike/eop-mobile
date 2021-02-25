@@ -83,6 +83,10 @@ class _LoginPageState extends State<LoginPage> {
                 options: MutationOptions(
                   document: gql(login),
                   update: (GraphQLDataProxy cache, QueryResult result) async {
+                    if (result.isLoading) {
+                      return Text('...loading');
+                    }
+
                     if (result.data != null) {
                       String token = result.data['login']['token'].toString();
 

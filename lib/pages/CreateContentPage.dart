@@ -274,6 +274,10 @@ class _CreateContentPageState extends State<CreateContentPage> {
                     },
                   ),
                   builder: (RunMutation runMutation, QueryResult result) {
+                    if (result.isLoading) {
+                      return Text('...loading');
+                    }
+
                     return RaisedButton(
                       color: kPrimaryThemeColor,
                       onPressed: () async {
@@ -299,7 +303,8 @@ class _CreateContentPageState extends State<CreateContentPage> {
                             'coordinates': location.toString(),
                             'file': uploadableFile,
                             'eventTitle': eventTitleController.text,
-                            'eventDescription': eventDescriptionController.text
+                            'eventDescription': eventDescriptionController.text,
+                            'eventId': eventValue
                           });
                         } catch (error) {
                           print('Catch block!!!');
