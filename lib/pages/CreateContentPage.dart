@@ -32,11 +32,29 @@ class CreateContentPage extends StatefulWidget {
 class _CreateContentPageState extends State<CreateContentPage> {
   File contentFile;
   EopMediaType contentFileMediaType;
+  String eventValue = 'new';
+  bool isNewEvent = true;
 
   final secureStorage = SecureStorage();
   final locator = GPSLocation();
   final TextEditingController contentTitleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController eventTitleController = TextEditingController();
+  final TextEditingController eventDescriptionController =
+      TextEditingController();
+
+  void resetState() {
+    setState(() {
+      contentFile = null;
+      contentFileMediaType = null;
+      eventValue = 'new';
+      isNewEvent = true;
+      contentTitleController.clear();
+      descriptionController.clear();
+      eventTitleController.clear();
+      eventDescriptionController.clear();
+    });
+  }
 
   final String myEvents = """
       query {
@@ -54,8 +72,11 @@ class _CreateContentPageState extends State<CreateContentPage> {
     mutation CreateContent(
       \$file: Upload!,
       \$coordinates: String!,
-      \$title: String!
-      \$description: String
+      \$title: String!,
+      \$description: String,
+      \$eventId: String
+      \$eventTitle: String,
+      \$eventDescription: String
     ){
       createContent(
         data: {
@@ -63,7 +84,12 @@ class _CreateContentPageState extends State<CreateContentPage> {
           coordinates: \$coordinates,
           title: \$title,
           description: \$description,
+          eventId: \$eventId,
           postedFromEop: true                 
+        },
+        newEventData: {
+          title: \$eventTitle,
+          description: \$eventDescription
         }
       ){
         title
@@ -102,68 +128,6 @@ class _CreateContentPageState extends State<CreateContentPage> {
         child: Center(
           child: Column(
             children: [
-              Query(
-                options: QueryOptions(
-                  document: gql(myEvents),
-                ),
-                builder: (QueryResult result,
-                    {VoidCallback refetch, FetchMore fetchMore}) {
-                  if (result.hasException) {
-                    // return Text(result.exception.toString());
-                    print(result.exception);
-                  }
-
-                  if (result.isLoading) {
-                    return Text('...loading');
-                  }
-
-                  var listOfEvents = <OrganizedEvent>[
-                    OrganizedEvent(id: 'new', title: 'New Event')
-                  ];
-
-                  if (result.data != null) {
-                    result.data['me']['eventsOrganized'].forEach((element) {
-                      print(element);
-                      listOfEvents.add(
-                        OrganizedEvent(
-                          title: element['title'],
-                          id: element['id'],
-                        ),
-                      );
-                    });
-                  }
-                  var menuItems = listOfEvents.map((event) => DropdownMenuItem(
-                      value: event.id, child: Text(event.title)));
-
-                  return Container(
-                    margin: EdgeInsets.only(
-                      top: 20.0,
-                      left: 40.0,
-                      right: 40.0,
-                    ),
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-                      iconEnabledColor: kPrimaryThemeColor,
-                      //TODO: Setup value for query
-                      value: 'new',
-                      icon: Icon(Icons.arrow_downward),
-                      iconSize: 24,
-                      elevation: 16,
-                      underline: Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(color: kPrimaryThemeColor)),
-                        height: 1,
-                      ),
-                      onChanged: (String selectedValue) {
-                        setState(() {
-                          print(selectedValue);
-                        });
-                      },
-                      items: menuItems.toList(),
-                    ),
-                  );
-                },
-              ),
               if (contentFile != null)
                 (contentFileMediaType == EopMediaType.IMAGE)
                     ? SizedBox(
@@ -211,14 +175,85 @@ class _CreateContentPageState extends State<CreateContentPage> {
                   ],
                 ),
               CredentialsInput(
-                label: 'title',
+                label: 'content title',
                 controller: contentTitleController,
               ),
               CredentialsInput(
-                label: 'description',
+                label: 'content description',
                 controller: descriptionController,
                 longText: true,
               ),
+              Query(
+                options: QueryOptions(
+                  document: gql(myEvents),
+                ),
+                builder: (QueryResult result,
+                    {VoidCallback refetch, FetchMore fetchMore}) {
+                  if (result.hasException) {
+                    // return Text(result.exception.toString());
+                    print(result.exception);
+                  }
+
+                  if (result.isLoading) {
+                    return Text('...loading');
+                  }
+
+                  var listOfEvents = <OrganizedEvent>[
+                    OrganizedEvent(id: 'new', title: 'New Event')
+                  ];
+
+                  if (result.data != null) {
+                    result.data['me']['eventsOrganized'].forEach((element) {
+                      print(element);
+                      listOfEvents.add(
+                        OrganizedEvent(
+                          title: element['title'],
+                          id: element['id'],
+                        ),
+                      );
+                    });
+                  }
+                  var menuItems = listOfEvents.map((event) => DropdownMenuItem(
+                      value: event.id, child: Text(event.title)));
+
+                  return Container(
+                    margin: EdgeInsets.symmetric(vertical: 20, horizontal: 45),
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      iconEnabledColor: kPrimaryThemeColor,
+                      //TODO: Setup value for query
+                      value: eventValue,
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 24,
+                      elevation: 16,
+                      underline: Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(color: kPrimaryThemeColor)),
+                        height: 1,
+                      ),
+                      onChanged: (String selectedValue) {
+                        setState(() {
+                          eventValue = selectedValue;
+                          isNewEvent = (selectedValue == 'new');
+                        });
+                      },
+                      items: menuItems.toList(),
+                    ),
+                  );
+                },
+              ),
+              if (isNewEvent)
+                Column(children: [
+                  CredentialsInput(
+                    label: 'event title',
+                    controller: eventTitleController,
+                  ),
+                  CredentialsInput(
+                    label: 'event description',
+                    controller: eventDescriptionController,
+                    longText: true,
+                  ),
+                ]),
               if (contentFile != null)
                 Mutation(
                   options: MutationOptions(
@@ -227,6 +262,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
                       if (result.data != null) {
                         print('Successful Upload!');
                         print(result.data);
+                        resetState();
                         //TODO: Add post-upload navigation or actions.
                       } else {
                         print('ERROR: ');
@@ -261,7 +297,9 @@ class _CreateContentPageState extends State<CreateContentPage> {
                             'title': contentTitleController.text,
                             'description': descriptionController.text,
                             'coordinates': location.toString(),
-                            'file': uploadableFile
+                            'file': uploadableFile,
+                            'eventTitle': eventTitleController.text,
+                            'eventDescription': eventDescriptionController.text
                           });
                         } catch (error) {
                           print('Catch block!!!');
@@ -288,21 +326,18 @@ class _CreateContentPageState extends State<CreateContentPage> {
                       decoration: TextDecoration.underline,
                     ),
                   ),
-                )
-              else
-                FlatButton(
-                  onPressed: () {
-                    setState(() {
-                      contentFile = null;
-                    });
-                  },
-                  child: Text(
-                    'reset',
-                    style: TextStyle(
-                      decoration: TextDecoration.underline,
-                    ),
+                ),
+              FlatButton(
+                onPressed: () {
+                  resetState();
+                },
+                child: Text(
+                  'Reset',
+                  style: TextStyle(
+                    decoration: TextDecoration.underline,
                   ),
                 ),
+              ),
             ],
           ),
         ),
