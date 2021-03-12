@@ -63,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Padding(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.all(50.0),
                 child: CircleAvatar(
                   backgroundImage: AssetImage('assets/images/eop_logo.png'),
                   backgroundColor: kPrimaryThemeColor,

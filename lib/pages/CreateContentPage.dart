@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:eop_mobile/components/MyContentPage.dart';
 import 'package:eop_mobile/utils/gpsLocation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -300,6 +301,8 @@ class _CreateContentPageState extends State<CreateContentPage> {
                               filename: contentFile.path,
                               contentType: MediaType(mediaType, fileExt));
 
+                          print('eventId: ' + eventValue);
+                          print('coordinates: ' + location.toString());
                           //TODO: Add Loading screen or something for this.
                           return runMutation({
                             'title': contentTitleController.text,
@@ -322,6 +325,17 @@ class _CreateContentPageState extends State<CreateContentPage> {
                     );
                   },
                 ),
+              RaisedButton(
+                child: Text('View My Content'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) {
+                      return MyContentPage(title: 'Create Content');
+                    }),
+                  );
+                },
+              ),
               if (contentFile == null)
                 FlatButton(
                   onPressed: () {
