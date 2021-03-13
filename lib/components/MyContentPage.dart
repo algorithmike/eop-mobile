@@ -16,7 +16,7 @@ class MyContentPage extends StatefulWidget {
 
 class _MyContentPageState extends State<MyContentPage> {
   final secureStorage = SecureStorage();
-  var listOfContent = <Widget>[];
+  List<Container> listOfContent = [];
   final String myContent = """
     query {
       me {
@@ -69,8 +69,24 @@ class _MyContentPageState extends State<MyContentPage> {
           }
 
           if (result.data != null) {
-            print('GOT RESULTS!');
-            print(result.data['me']['content']);
+            listOfContent = [];
+            result.data['me']['content'].forEach((item) {
+              listOfContent.add(
+                Container(
+                  child: Column(
+                    children: [
+                      if (item['mediaType'] == 'image')
+                        Image.network(item['mediaUrl']),
+                      if (item['mediaType'] == 'video')
+                        Text('VIDEO PLACEHOLDER'),
+                      Text(
+                        item['title'],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            });
           }
 
           return Scaffold(
@@ -79,15 +95,18 @@ class _MyContentPageState extends State<MyContentPage> {
                 toolbarHeight: 30.0,
                 title: Text(widget.title),
               ),
-              body: SingleChildScrollView(
-                child: Center(
+              body: Center(
+                child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      if (listOfContent.isEmpty)
-                        Container(
-                          margin: EdgeInsets.all(25.0),
-                          child: Text('There is no content to display.'),
-                        ),
+                      (listOfContent.isEmpty)
+                          ? Container(
+                              margin: EdgeInsets.all(25.0),
+                              child: Text('There is no content to display.'),
+                            )
+                          : Column(
+                              children: listOfContent,
+                            ),
                       RaisedButton(
                         onPressed: () {
                           Navigator.pop(context);
