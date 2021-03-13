@@ -29,7 +29,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      _controller.value.initialized
+      _controller.value.isInitialized
           ? SizedBox(
               height: 300,
               child: AspectRatio(
