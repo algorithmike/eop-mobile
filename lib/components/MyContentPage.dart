@@ -3,6 +3,7 @@ import 'package:eop_mobile/utils/secureStorage.dart';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:eop_mobile/utils/constants.dart';
+import 'package:eop_mobile/models/Content.dart';
 
 class MyContentPage extends StatefulWidget {
   MyContentPage({Key key, this.title}) : super(key: key);
@@ -15,7 +16,7 @@ class MyContentPage extends StatefulWidget {
 
 class _MyContentPageState extends State<MyContentPage> {
   final secureStorage = SecureStorage();
-
+  var listOfContent = <Widget>[];
   final String myContent = """
     query {
       me {
@@ -82,6 +83,11 @@ class _MyContentPageState extends State<MyContentPage> {
                 child: Center(
                   child: Column(
                     children: [
+                      if (listOfContent.isEmpty)
+                        Container(
+                          margin: EdgeInsets.all(25.0),
+                          child: Text('There is no content to display.'),
+                        ),
                       RaisedButton(
                         onPressed: () {
                           Navigator.pop(context);

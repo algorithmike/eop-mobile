@@ -331,7 +331,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) {
-                      return MyContentPage(title: 'Create Content');
+                      return MyContentPage(title: 'My Content');
                     }),
                   );
                 },
