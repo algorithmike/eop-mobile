@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,8 @@ import 'package:video_player/video_player.dart';
 import 'package:eop_mobile/utils/constants.dart';
 
 class ChewiePlayer extends StatefulWidget {
-  const ChewiePlayer({this.mediaUrl});
+  const ChewiePlayer({this.mediaUrl, this.file});
+  final File file;
   final String mediaUrl;
 
   @override
@@ -33,7 +35,9 @@ class _ChewiePlayerState extends State<ChewiePlayer> {
   }
 
   Future<void> initializePlayer() async {
-    _videoPlayerController1 = VideoPlayerController.network(widget.mediaUrl);
+    _videoPlayerController1 = (widget.file == null)
+        ? VideoPlayerController.network(widget.mediaUrl)
+        : VideoPlayerController.file(widget.file);
     await Future.wait([_videoPlayerController1.initialize()]);
     _chewieController = ChewieController(
       videoPlayerController: _videoPlayerController1,

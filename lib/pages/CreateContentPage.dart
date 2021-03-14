@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:eop_mobile/components/ChewiePlayer.dart';
 import 'package:eop_mobile/components/MyContentPage.dart';
 import 'package:eop_mobile/utils/gpsLocation.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,6 @@ import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart';
 
 import 'package:eop_mobile/components/CredentialsInput.dart';
-import 'package:eop_mobile/components/VideoPlayerWidget.dart';
 import 'package:eop_mobile/models/enums.dart';
 import 'package:eop_mobile/models/OrganizedEvent.dart';
 import 'package:eop_mobile/utils/secureStorage.dart';
@@ -144,7 +144,8 @@ class _CreateContentPageState extends State<CreateContentPage> {
                           ),
                         ),
                       )
-                    : VideoPlayerWidget(file: contentFile)
+                    // : VideoPlayerWidget(file: contentFile)
+                    : ChewiePlayer(file: contentFile)
               else
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
