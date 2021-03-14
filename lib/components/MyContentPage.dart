@@ -4,6 +4,7 @@ import 'package:eop_mobile/utils/secureStorage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:eop_mobile/utils/constants.dart';
 import 'package:eop_mobile/models/Content.dart';
+import 'package:eop_mobile/components/ChewiePlayer.dart';
 
 class MyContentPage extends StatefulWidget {
   MyContentPage({Key key, this.title}) : super(key: key);
@@ -73,22 +74,29 @@ class _MyContentPageState extends State<MyContentPage> {
             result.data['me']['content'].forEach((item) {
               listOfContent.add(
                 Container(
+                  margin: EdgeInsets.only(top: 10.0, bottom: 30.0),
                   child: Column(
                     children: [
+                      Text(
+                        item['title'],
+                        style: TextStyle(
+                          fontSize: 22.0,
+                          fontWeight: FontWeight.bold,
+                          color: kPrimaryThemeColor,
+                        ),
+                      ),
                       if (item['mediaType'] == 'image')
                         Image.network(item['mediaUrl']),
                       if (item['mediaType'] == 'video')
-                        Text('VIDEO PLACEHOLDER'),
-                      Text(
-                        item['title'],
-                      ),
+                        Container(
+                          child: ChewiePlayer(mediaUrl: item['mediaUrl']),
+                        )
                     ],
                   ),
                 ),
               );
             });
           }
-
           return Scaffold(
               appBar: AppBar(
                 centerTitle: true,
