@@ -3,7 +3,6 @@ import 'package:eop_mobile/utils/secureStorage.dart';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:eop_mobile/utils/constants.dart';
-import 'package:eop_mobile/models/Content.dart';
 import 'package:eop_mobile/components/ChewiePlayer.dart';
 
 class MyContentPage extends StatefulWidget {
@@ -36,6 +35,16 @@ class _MyContentPageState extends State<MyContentPage> {
       }
     }
   """;
+
+  final String deleteContent = """
+    mutation DeleteContent(\$contentId: String!){
+      deleteContent(contentId: \$contentId){
+        id
+        title
+        mediaUrl
+      }
+    }
+    """;
 
   @override
   void initState() {
@@ -74,7 +83,7 @@ class _MyContentPageState extends State<MyContentPage> {
             result.data['me']['content'].forEach((item) {
               listOfContent.add(
                 Container(
-                  margin: EdgeInsets.only(top: 10.0, bottom: 30.0),
+                  margin: EdgeInsets.only(top: 10.0, bottom: 40.0),
                   child: Column(
                     children: [
                       Text(
@@ -90,7 +99,36 @@ class _MyContentPageState extends State<MyContentPage> {
                       if (item['mediaType'] == 'video')
                         Container(
                           child: ChewiePlayer(mediaUrl: item['mediaUrl']),
-                        )
+                        ),
+                      Mutation(
+                        options: MutationOptions(
+                          document: gql(deleteContent),
+                          update: (GraphQLDataProxy cache,
+                              QueryResult result) async {
+                            if (result.isLoading) {
+                              return Text('...loading');
+                            }
+
+                            if (result.data != null) {
+                              setState(() {
+                                print('Deletion Success.');
+                                refetch();
+                              });
+                            } else {
+                              print('Deletion Failed.');
+                            }
+                          },
+                        ),
+                        builder: (RunMutation runMutation, QueryResult result) {
+                          return RaisedButton(
+                            color: kPrimaryThemeColor,
+                            onPressed: () {
+                              return runMutation({'contentId': item['id']});
+                            },
+                            child: Text('Delete'),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),

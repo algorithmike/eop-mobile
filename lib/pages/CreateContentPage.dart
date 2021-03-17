@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:eop_mobile/components/ChewiePlayer.dart';
-import 'package:eop_mobile/components/MyContentPage.dart';
+import 'package:eop_mobile/pages/MyContentPage.dart';
 import 'package:eop_mobile/utils/gpsLocation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -271,9 +271,6 @@ class _CreateContentPageState extends State<CreateContentPage> {
                       } else {
                         print('ERROR: ');
                         print(result);
-                        // popupAlert.showOkayPrompt(
-                        //   message: result.exception.graphqlErrors[0].message,
-                        // );
                       }
                     },
                   ),
