@@ -328,9 +328,11 @@ class _CreateContentPageState extends State<CreateContentPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) {
-                      return MyContentPage(title: 'My Content');
-                    }),
+                    MaterialPageRoute(
+                        maintainState: false,
+                        builder: (context) {
+                          return MyContentPage(title: 'My Content');
+                        }),
                   );
                 },
               ),
