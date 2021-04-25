@@ -312,11 +312,11 @@ class _CreateContentPageState extends State<CreateContentPage> {
                             'eventId': eventValue
                           });
                         } catch (error) {
-                          print('Catch block!!!');
                           print(error);
-                          // popupAlert.showOkayPrompt(
-                          //   message: 'Unsuccessful post.',
-                          // );
+                          popupAlert.showOkayPrompt(
+                            message: error +
+                                ' Please manually enable location permissions for the Eop application on your mobile device.',
+                          );
                         }
                       },
                       child: Text('Publish'),
